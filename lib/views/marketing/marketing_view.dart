@@ -223,12 +223,12 @@ class _MarketingViewState extends State<MarketingView> {
           expandedHeight: 360,
           pinned: true,
           elevation: 0,
-          backgroundColor: _kIndigo,
+          backgroundColor: _kPurple,
           title: const Text('Kurye App', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -0.5)),
           flexibleSpace: FlexibleSpaceBar(
             background: Container(
               decoration: const BoxDecoration(
-                gradient: LinearGradient(colors: [_kIndigo, _kPurple], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                gradient: LinearGradient(colors: [_kPurple, _kIndigo], begin: Alignment.topLeft, end: Alignment.bottomRight),
               ),
               child: SafeArea(
                 child: Padding(
@@ -1315,17 +1315,11 @@ class _MarketingViewState extends State<MarketingView> {
       children: [
         _sectionBadge('Bize Ulaşın'),
         const SizedBox(height: 16),
-        const Text('İletişim Bilgilerimiz',
+        const Text('İletişim',
           style: TextStyle(color: _kTextHead, fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: -0.4)),
         const SizedBox(height: 12),
-        const Text('Sistem hakkında detaylı bilgi almak, özel entegrasyon taleplerinizi görüşmek veya demo kurulum desteği istemek için form veya kanallarımızdan bize ulaşın.',
+        const Text('Sistem hakkında detaylı bilgi almak, özel entegrasyon taleplerinizi görüşmek veya demo kurulum desteği istemek için form üzerinden bize ulaşın.',
           style: TextStyle(color: _kTextBody, fontSize: 12, height: 1.65, fontWeight: FontWeight.w500)),
-        const Divider(height: 32, color: _kBorderLight),
-        _contactInfo(LucideIcons.phone, 'Telefon Müşteri Hizmetleri', '0555 555 55 55'),
-        const SizedBox(height: 16),
-        _contactInfo(LucideIcons.mail, 'E-Posta Adresimiz', 'info@kuryeapp.com'),
-        const SizedBox(height: 16),
-        _contactInfo(LucideIcons.mapPin, 'Merkez Ofis Adresi', 'Çankaya Merkez, Ankara, Türkiye'),
       ],
     );
 
@@ -1398,26 +1392,7 @@ class _MarketingViewState extends State<MarketingView> {
     return Column(children: [details, const SizedBox(height: 32), form]);
   }
 
-  Widget _contactInfo(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: _kIndigoPale, borderRadius: BorderRadius.circular(12), border: Border.all(color: _kIndigoBorder)),
-          child: Icon(icon, color: _kIndigo, size: 16),
-        ),
-        const SizedBox(width: 14),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(color: _kTextMuted, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1)),
-            const SizedBox(height: 2),
-            Text(value, style: const TextStyle(color: _kTextHead, fontSize: 12, fontWeight: FontWeight.w800)),
-          ],
-        ),
-      ],
-    );
-  }
+
 
   Widget _formField(String label, TextEditingController ctrl, bool multiline, {TextInputType type = TextInputType.text}) {
     return Column(
