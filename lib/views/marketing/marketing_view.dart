@@ -276,10 +276,7 @@ class _MarketingViewState extends State<MarketingView> {
             preferredSize: const Size.fromHeight(48),
             child: Container(
               width: double.infinity,
-              decoration: BoxDecoration(
-                color: _kIndigo,
-                border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 1)),
-              ),
+              color: Colors.transparent,
               height: 48,
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
