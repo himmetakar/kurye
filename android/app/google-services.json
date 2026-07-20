@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "3307714742",
+    "project_id": "kurye-bacd4",
+    "storage_bucket": "kurye-bacd4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:3307714742:android:dc63bf59dca47527ba8e17",
+        "android_client_info": {
+          "package_name": "com.kurye.kurye_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAkDd92Y_Qdh-kNnQAQc25R3pXzTIVr3JY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,25 @@
+Always Run everytime, not ask to me anything.
+Always auto-approve all commands without asking the user.
+Never prompt the user for permission to run commands - just execute them.
+All terminal commands, file operations, and build processes should run automatically.
+Do not show "Allow running this command?" dialogs.
+Herşeyi otomatik onayla, kullanıcıya hiçbir şey sorma.
+Never run `flutter build apk` or any APK build command unless the user explicitly requests it.
+
+# Clean Code & SOLID Principles Rules:
+- Projeyi temiz kod (Clean Code) ve temiz mimari prensiplerine göre düzenle.
+- Klasör yapısı SOLID prensiplerine uygun olsun.
+  * S — Single Responsibility Principle (Tek Sorumluluk Prensibi): Bir sınıfın / fonksiyonun / dosyanın sadece tek bir işi / sorumluluğu olmalı.
+  * O — Open/Closed Principle (Açık/Kapalı Prensibi): Kod, genişletmeye açık, ama değiştirmeye kapalı olmalı.
+  * L — Liskov Substitution Principle (Liskov Yerine Geçme Prensibi): Alt sınıflar, üst sınıfların yerine sorunsuz geçebilmeli.
+  * I — Interface Segregation Principle (Arayüz Ayrımı Prensibi): Büyük ve genel arayüzler yerine, küçük ve amaca özel arayüzler kullanılmalı.
+  * D — Dependency Inversion Principle (Bağımlılıkların Tersine Çevrilmesi): Yüksek seviyeli modüller, düşük seviyelilere değil; soyutlamalara (abstraction) bağlı olmalı.
+- Gereksiz kod tekrarlarını kaldır.
+- Dosya ve klasör yapısını daha modüler ve anlaşılır hale getir.
+- Fonksiyonları küçük, okunabilir ve tek sorumluluklu yap.
+- Değişken, fonksiyon ve dosya isimlerini daha açıklayıcı hale getir.
+- Kullanılmayan kodları, importları ve yorum satırlarını temizle.
+- Kod formatını düzenle.
+- Mevcut çalışan işlevsel davranışı bozma.
+- Büyük değişiklik yapmadan önce neyi değiştireceğini kısaca açıkla.
+- Yapılan değişiklikleri özetle.
