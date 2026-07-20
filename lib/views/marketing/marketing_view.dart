@@ -220,20 +220,19 @@ class _MarketingViewState extends State<MarketingView> {
       controller: _scrollController,
       slivers: [
         SliverAppBar(
-          expandedHeight: 330,
+          expandedHeight: 360,
           pinned: true,
           elevation: 0,
           backgroundColor: _kIndigo,
+          title: const Text('Kurye App', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -0.5)),
           flexibleSpace: FlexibleSpaceBar(
-            titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-            title: const Text('Kurye App', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -0.5)),
             background: Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(colors: [_kIndigo, _kPurple], begin: Alignment.topLeft, end: Alignment.bottomRight),
               ),
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+                  padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,6 +272,34 @@ class _MarketingViewState extends State<MarketingView> {
               ),
             ),
           ),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(48),
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: _kIndigo,
+                border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 1)),
+              ),
+              height: 48,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    _mobileNavLink('Özellikler', () => _scrollToSection(_featuresKey)),
+                    const SizedBox(width: 16),
+                    _mobileNavLink('Fiyatlama', () => _scrollToSection(_pricingKey)),
+                    const SizedBox(width: 16),
+                    _mobileNavLink('İş İlanları', () => _scrollToSection(_postingsKey)),
+                    const SizedBox(width: 16),
+                    _mobileNavLink('SSS', () => _scrollToSection(_faqKey)),
+                    const SizedBox(width: 16),
+                    _mobileNavLink('İletişim', () => _scrollToSection(_contactKey)),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
         SliverToBoxAdapter(
           child: Container(
@@ -304,35 +331,50 @@ class _MarketingViewState extends State<MarketingView> {
                 const SizedBox(height: 48),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _buildQuickInfoSection(false),
+                  child: Container(
+                    key: _featuresKey,
+                    child: _buildQuickInfoSection(false),
+                  ),
                 ),
 
                 // Pricing Section
                 const SizedBox(height: 48),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _buildPricingSection(),
+                  child: Container(
+                    key: _pricingKey,
+                    child: _buildPricingSection(),
+                  ),
                 ),
 
                 // Job Postings Section
                 const SizedBox(height: 48),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _buildJobPostingsSection(provider),
+                  child: Container(
+                    key: _postingsKey,
+                    child: _buildJobPostingsSection(provider),
+                  ),
                 ),
 
                 // FAQ Section
                 const SizedBox(height: 48),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _buildFaqSection(),
+                  child: Container(
+                    key: _faqKey,
+                    child: _buildFaqSection(),
+                  ),
                 ),
 
                 // Contact Section
                 const SizedBox(height: 48),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _buildContactSection(provider, false),
+                  child: Container(
+                    key: _contactKey,
+                    child: _buildContactSection(provider, false),
+                  ),
                 ),
                 const SizedBox(height: 140),
               ],
@@ -460,6 +502,29 @@ class _MarketingViewState extends State<MarketingView> {
       onPressed: onTap,
       style: TextButton.styleFrom(foregroundColor: _kTextBody),
       child: Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+    );
+  }
+
+  Widget _mobileNavLink(String label, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.2,
+          ),
+        ),
+      ),
     );
   }
 
