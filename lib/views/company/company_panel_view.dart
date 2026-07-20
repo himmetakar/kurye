@@ -32,8 +32,10 @@ class _CompanyPanelViewState extends State<CompanyPanelView> {
   final _formKey = GlobalKey<FormState>();
   final _jobTitleController = TextEditingController();
   final _jobDescController = TextEditingController();
-  final _jobCityController = TextEditingController();
   final _jobSalaryController = TextEditingController();
+
+  String? _selectedCity;
+  String? _selectedDistrict;
 
   String _activeTab = 'fleet'; // 'fleet' | 'shifts' | 'postings' | 'finance'
 
@@ -41,25 +43,38 @@ class _CompanyPanelViewState extends State<CompanyPanelView> {
   void dispose() {
     _jobTitleController.dispose();
     _jobDescController.dispose();
-    _jobCityController.dispose();
     _jobSalaryController.dispose();
     super.dispose();
   }
 
   void _publishJob(AppProvider provider) {
     if (_formKey.currentState!.validate()) {
+      if (_selectedCity == null || _selectedDistrict == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Lütfen il ve ilçe seçin.'), backgroundColor: Colors.redAccent),
+        );
+        return;
+      }
+
+      final company = provider.companies.firstWhere((c) => c.id == widget.companyId, orElse: () => provider.companies.first);
+
       provider.addJobPosting(
-        widget.companyId,
-        _jobTitleController.text,
-        _jobDescController.text,
-        _jobCityController.text,
-        _jobSalaryController.text,
+        companyId: widget.companyId,
+        companyName: company.name,
+        title: _jobTitleController.text,
+        description: _jobDescController.text,
+        city: _selectedCity!,
+        district: _selectedDistrict!,
+        salary: _jobSalaryController.text,
       );
 
       _jobTitleController.clear();
       _jobDescController.clear();
-      _jobCityController.clear();
       _jobSalaryController.clear();
+      setState(() {
+        _selectedCity = null;
+        _selectedDistrict = null;
+      });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('İş ilanı başarıyla yayınlandı! 📢'), backgroundColor: _kIndigo),
@@ -358,23 +373,51 @@ class _CompanyPanelViewState extends State<CompanyPanelView> {
             Row(
               children: [
                 Expanded(
-                  child: TextFormField(
-                    controller: _jobCityController,
-                    decoration: _inputDecoration('Şehir', LucideIcons.mapPin),
-                    validator: (v) => v == null || v.isEmpty ? 'Gerekli' : null,
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedCity,
+                    dropdownColor: _kWhite,
+                    decoration: _inputDecoration('Şehir (İl)', LucideIcons.mapPin),
+                    items: kTurkeyCities.keys.map((city) => DropdownMenuItem(
+                      value: city,
+                      child: Text(city),
+                    )).toList(),
+                    onChanged: (val) {
+                      setState(() {
+                        _selectedCity = val;
+                        _selectedDistrict = null;
+                      });
+                    },
+                    validator: (v) => v == null ? 'Gerekli' : null,
                     style: const TextStyle(color: _kTextHead, fontSize: 11),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: TextFormField(
-                    controller: _jobSalaryController,
-                    decoration: _inputDecoration('Hak Ediş Bedeli', LucideIcons.coins),
-                    validator: (v) => v == null || v.isEmpty ? 'Gerekli' : null,
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedDistrict,
+                    dropdownColor: _kWhite,
+                    decoration: _inputDecoration('İlçe', LucideIcons.mapPin),
+                    items: (_selectedCity == null ? <String>[] : kTurkeyCities[_selectedCity]!).map((dist) => DropdownMenuItem(
+                      value: dist,
+                      child: Text(dist),
+                    )).toList(),
+                    onChanged: (val) {
+                      setState(() {
+                        _selectedDistrict = val;
+                      });
+                    },
+                    validator: (v) => v == null ? 'Gerekli' : null,
                     style: const TextStyle(color: _kTextHead, fontSize: 11),
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _jobSalaryController,
+              decoration: _inputDecoration('Hak Ediş / Ücret', LucideIcons.coins),
+              validator: (v) => v == null || v.isEmpty ? 'Gerekli' : null,
+              style: const TextStyle(color: _kTextHead, fontSize: 11),
             ),
             const SizedBox(height: 20),
             ElevatedButton(

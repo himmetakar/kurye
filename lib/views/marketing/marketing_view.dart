@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../providers/app_provider.dart';
+import '../../models/job_posting.dart';
 import 'dart:async';
 import 'components/interactive_simulator_card.dart';
 
@@ -43,12 +44,16 @@ class _MarketingViewState extends State<MarketingView> {
   final _homeKey = GlobalKey();
   final _featuresKey = GlobalKey();
   final _pricingKey = GlobalKey();
+  final _postingsKey = GlobalKey();
   final _faqKey = GlobalKey();
   final _contactKey = GlobalKey();
 
   int? _openFaq;
   bool _isSubmitted = false;
   int _selectedFeatureTab = 0;
+
+  String? _searchCity;
+  String? _searchDistrict;
 
   final _faqData = const [
     {
@@ -180,6 +185,10 @@ class _MarketingViewState extends State<MarketingView> {
                         const SizedBox(height: 80),
                         _buildDivider(),
                         const SizedBox(height: 80),
+                        Container(key: _postingsKey, child: _buildJobPostingsSection(provider)),
+                        const SizedBox(height: 80),
+                        _buildDivider(),
+                        const SizedBox(height: 80),
                         Container(key: _faqKey, child: _buildFaqSection()),
                         const SizedBox(height: 80),
                         _buildDivider(),
@@ -306,6 +315,13 @@ class _MarketingViewState extends State<MarketingView> {
                   child: _buildPricingSection(),
                 ),
 
+                // Job Postings Section
+                const SizedBox(height: 48),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _buildJobPostingsSection(provider),
+                ),
+
                 // FAQ Section
                 const SizedBox(height: 48),
                 Padding(
@@ -409,6 +425,7 @@ class _MarketingViewState extends State<MarketingView> {
               _navLink('Ana Sayfa', () => _scrollToSection(_homeKey)),
               _navLink('Özellikler', () => _scrollToSection(_featuresKey)),
               _navLink('Fiyatlar', () => _scrollToSection(_pricingKey)),
+              _navLink('İş İlanları', () => _scrollToSection(_postingsKey)),
               _navLink('S.S.S.', () => _scrollToSection(_faqKey)),
               _navLink('İletişim', () => _scrollToSection(_contactKey)),
               const SizedBox(width: 24),
@@ -1357,6 +1374,283 @@ class _MarketingViewState extends State<MarketingView> {
     );
   }
 
+  // ─────────────── JOB POSTINGS ───────────────
+  Widget _buildJobPostingsSection(AppProvider provider) {
+    final filteredPostings = provider.jobPostings.where((ilan) {
+      if (_searchCity != null && ilan.city != _searchCity) return false;
+      if (_searchDistrict != null && ilan.district != _searchDistrict) return false;
+      return true;
+    }).toList();
+
+    final isDesktop = MediaQuery.of(context).size.width > 900;
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1100),
+        child: Column(
+          children: [
+            _sectionBadge('İş Fırsatları'),
+            const SizedBox(height: 12),
+            const Text('Aktif Kurye İş İlanları', style: TextStyle(color: _kTextHead, fontSize: 28, fontWeight: FontWeight.w900, letterSpacing: -0.4)),
+            const SizedBox(height: 10),
+            const Text('Kurye arayan restoranlar, firmalar ve lojistik ağlarının ilanlarını inceleyin, hemen kazanmaya başlayın.',
+              textAlign: TextAlign.center, style: TextStyle(color: _kTextBody, fontSize: 12, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 32),
+
+            // ── Ergonomic Search Filter Panel ──
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: _kWhite,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: _kBorderLight),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
+              ),
+              child: Flex(
+                direction: isDesktop ? Axis.horizontal : Axis.vertical,
+                children: [
+                  // City Dropdown
+                  Expanded(
+                    flex: isDesktop ? 3 : 0,
+                    child: DropdownButtonFormField<String>(
+                      value: _searchCity,
+                      dropdownColor: _kWhite,
+                      decoration: InputDecoration(
+                        labelText: 'Şehir (İl) Seçin',
+                        labelStyle: const TextStyle(color: _kTextMuted, fontSize: 11),
+                        prefixIcon: const Icon(LucideIcons.mapPin, color: _kIndigo, size: 14),
+                        filled: true,
+                        fillColor: _kBg,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                      ),
+                      items: kTurkeyCities.keys.map((city) => DropdownMenuItem(
+                        value: city,
+                        child: Text(city),
+                      )).toList(),
+                      onChanged: (val) {
+                        setState(() {
+                          _searchCity = val;
+                          _searchDistrict = null;
+                        });
+                      },
+                      style: const TextStyle(color: _kTextHead, fontSize: 12),
+                    ),
+                  ),
+                  const SizedBox(width: 12, height: 12),
+
+                  // District Dropdown
+                  Expanded(
+                    flex: isDesktop ? 3 : 0,
+                    child: DropdownButtonFormField<String>(
+                      value: _searchDistrict,
+                      dropdownColor: _kWhite,
+                      decoration: InputDecoration(
+                        labelText: 'İlçe Seçin',
+                        labelStyle: const TextStyle(color: _kTextMuted, fontSize: 11),
+                        prefixIcon: const Icon(LucideIcons.compass, color: _kIndigo, size: 14),
+                        filled: true,
+                        fillColor: _kBg,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                      ),
+                      items: (_searchCity == null ? <String>[] : kTurkeyCities[_searchCity]!).map((dist) => DropdownMenuItem(
+                        value: dist,
+                        child: Text(dist),
+                      )).toList(),
+                      onChanged: (val) {
+                        setState(() {
+                          _searchDistrict = val;
+                        });
+                      },
+                      style: const TextStyle(color: _kTextHead, fontSize: 12),
+                    ),
+                  ),
+                  const SizedBox(width: 12, height: 12),
+
+                  // Clear Filters button
+                  if (_searchCity != null || _searchDistrict != null)
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _searchCity = null;
+                          _searchDistrict = null;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(LucideIcons.x, color: Colors.red.shade600, size: 14),
+                            const SizedBox(width: 6),
+                            Text('Filtreleri Temizle', style: TextStyle(color: Colors.red.shade700, fontSize: 12, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 24),
+
+            // ── Grid of Listings ──
+            if (filteredPostings.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(48),
+                decoration: BoxDecoration(
+                  color: _kWhite,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: _kBorderLight),
+                ),
+                child: const Column(
+                  children: [
+                    Icon(LucideIcons.info, size: 36, color: _kTextMuted),
+                    SizedBox(height: 12),
+                    Text('Aradığınız kriterlere uygun iş ilanı bulunamadı.', style: TextStyle(color: _kTextHead, fontSize: 13, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 4),
+                    Text('Filtreleri değiştirerek farklı bölgeleri inceleyebilirsiniz.', style: TextStyle(color: _kTextMuted, fontSize: 11)),
+                  ],
+                ),
+              )
+            else
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final double parentWidth = constraints.maxWidth;
+                  final int cols = parentWidth > 800 ? 2 : 1;
+                  final double spacing = 16.0;
+                  final double width = (parentWidth - (spacing * (cols - 1))) / cols;
+
+                  return Wrap(
+                    spacing: spacing,
+                    runSpacing: spacing,
+                    children: filteredPostings.map((ilan) => SizedBox(
+                      width: width,
+                      child: _buildJobCard(ilan),
+                    )).toList(),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildJobCard(JobPosting ilan) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: _kWhite,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _kBorderLight),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 4))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: _kIndigoPale, borderRadius: BorderRadius.circular(10)),
+                child: const Icon(LucideIcons.briefcase, color: _kIndigo, size: 16),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(color: _kGreen.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+                child: Text(ilan.salary, style: const TextStyle(color: _kGreen, fontSize: 9, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(ilan.title, style: const TextStyle(color: _kTextHead, fontSize: 14, fontWeight: FontWeight.w900)),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Text(ilan.companyName, style: const TextStyle(color: _kIndigo, fontSize: 11, fontWeight: FontWeight.bold)),
+              const SizedBox(width: 6),
+              const Text('•', style: TextStyle(color: _kTextMuted)),
+              const SizedBox(width: 6),
+              const Icon(LucideIcons.mapPin, color: _kTextMuted, size: 10),
+              const SizedBox(width: 4),
+              Text('${ilan.city} / ${ilan.district ?? ""}', style: const TextStyle(color: _kTextMuted, fontSize: 11, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(ilan.description, style: const TextStyle(color: _kTextBody, fontSize: 12, height: 1.5)),
+          const SizedBox(height: 20),
+          GestureDetector(
+            onTap: () => _showApplyDialog(ilan),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [_kIndigo, _kPurple]),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [BoxShadow(color: _kIndigo.withValues(alpha: 0.15), blurRadius: 8, offset: const Offset(0, 4))],
+              ),
+              child: const Text('Kurye Olarak Başvur', textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showApplyDialog(JobPosting ilan) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: _kWhite,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: const [
+            Icon(LucideIcons.sparkles, color: _kIndigo, size: 20),
+            SizedBox(width: 8),
+            Text('İlana Başvur', style: TextStyle(color: _kTextHead, fontWeight: FontWeight.bold, fontSize: 15)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(ilan.title, style: const TextStyle(color: _kTextHead, fontSize: 13, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text('Yayınlayan: ${ilan.companyName}', style: const TextStyle(color: _kIndigo, fontSize: 11, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            const Text(
+              'Bu ilana başvurmak ve sistemdeki diğer ilanları incelemek için hemen Kurye App mobil uygulamasını indirip üye olabilirsiniz! 🚀',
+              style: TextStyle(color: _kTextBody, fontSize: 12, height: 1.5),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Kapat', style: TextStyle(color: _kTextMuted)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Mobil uygulama indirme linki gönderildi! 📱'), backgroundColor: _kIndigo),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: _kIndigo),
+            child: const Text('Uygulamayı İndir', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ─────────────── FOOTER ───────────────
   Widget _buildFooter() {
     return Container(
@@ -1375,6 +1669,7 @@ class _MarketingViewState extends State<MarketingView> {
               _footerLink('Ana Sayfa', () => _scrollToSection(_homeKey)),
               _footerLink('Özellikler', () => _scrollToSection(_featuresKey)),
               _footerLink('Fiyatlar', () => _scrollToSection(_pricingKey)),
+              _footerLink('İş İlanları', () => _scrollToSection(_postingsKey)),
               _footerLink('S.S.S.', () => _scrollToSection(_faqKey)),
               _footerLink('İletişim', () => _scrollToSection(_contactKey)),
             ],

@@ -20,6 +20,7 @@ const _kIndigoPale = Color(0xFFEEF2FF);  // indigo-50
 const _kIndigoBorder = Color(0xFFC7D2FE); // indigo-200
 const _kPurple = Color(0xFF7C3AED);      // purple-600
 const _kOrange = Color(0xFFF97316);      // orange-500
+const _kGreen = Color(0xFF10B981);       
 
 class AdminDashboardView extends StatefulWidget {
   const AdminDashboardView({super.key});
@@ -29,7 +30,23 @@ class AdminDashboardView extends StatefulWidget {
 }
 
 class _AdminDashboardViewState extends State<AdminDashboardView> {
-  String _activeTab = 'companies'; // 'companies' | 'restaurants' | 'couriers' | 'contact' | 'support'
+  String _activeTab = 'companies'; // 'companies' | 'restaurants' | 'couriers' | 'postings' | 'contact' | 'support'
+
+  // Job Posting state variables
+  final _jobFormKey = GlobalKey<FormState>();
+  final _jobTitleController = TextEditingController();
+  final _jobDescController = TextEditingController();
+  final _jobSalaryController = TextEditingController();
+  String? _selectedJobCity;
+  String? _selectedJobDistrict;
+
+  @override
+  void dispose() {
+    _jobTitleController.dispose();
+    _jobDescController.dispose();
+    _jobSalaryController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -134,6 +151,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
           _buildPillTabButton('companies', LucideIcons.building2, 'Firmalar'),
           _buildPillTabButton('restaurants', LucideIcons.chefHat, 'Restoranlar'),
           _buildPillTabButton('couriers', LucideIcons.bike, 'Kuryeler'),
+          _buildPillTabButton('postings', LucideIcons.megaphone, 'İlanlar'),
           _buildPillTabButton('contact', LucideIcons.mail, 'Talepler'),
           _buildPillTabButton('support', LucideIcons.messageSquare, 'Destek'),
         ],
@@ -175,6 +193,8 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
         return _buildRestaurantsList(provider);
       case 'couriers':
         return _buildCouriersList(provider);
+      case 'postings':
+        return _buildJobPostingsSection(provider);
       case 'contact':
         return _buildContactMessagesList(provider);
       case 'support':
@@ -287,6 +307,191 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildJobPostingsSection(AppProvider provider) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Form Card
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: _kWhite,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: _kBorder),
+          ),
+          child: Form(
+            key: _jobFormKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text('Yeni İş İlanı Yayınla (Süper Admin)', style: TextStyle(color: _kTextHead, fontSize: 13, fontWeight: FontWeight.w900)),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _jobTitleController,
+                  decoration: _inputDecoration('İlan Başlığı', LucideIcons.user),
+                  validator: (v) => v == null || v.isEmpty ? 'Gerekli' : null,
+                  style: const TextStyle(color: _kTextHead, fontSize: 11),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _jobDescController,
+                  maxLines: 3,
+                  decoration: _inputDecoration('İlan Açıklaması', LucideIcons.edit),
+                  validator: (v) => v == null || v.isEmpty ? 'Gerekli' : null,
+                  style: const TextStyle(color: _kTextHead, fontSize: 11),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: _selectedJobCity,
+                        dropdownColor: _kWhite,
+                        decoration: _inputDecoration('Şehir (İl)', LucideIcons.mapPin),
+                        items: kTurkeyCities.keys.map((city) => DropdownMenuItem(
+                          value: city,
+                          child: Text(city),
+                        )).toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedJobCity = val;
+                            _selectedJobDistrict = null;
+                          });
+                        },
+                        validator: (v) => v == null ? 'Gerekli' : null,
+                        style: const TextStyle(color: _kTextHead, fontSize: 11),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: _selectedJobDistrict,
+                        dropdownColor: _kWhite,
+                        decoration: _inputDecoration('İlçe', LucideIcons.mapPin),
+                        items: (_selectedJobCity == null ? <String>[] : kTurkeyCities[_selectedJobCity]!).map((dist) => DropdownMenuItem(
+                          value: dist,
+                          child: Text(dist),
+                        )).toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedJobDistrict = val;
+                          });
+                        },
+                        validator: (v) => v == null ? 'Gerekli' : null,
+                        style: const TextStyle(color: _kTextHead, fontSize: 11),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _jobSalaryController,
+                  decoration: _inputDecoration('Hak Ediş / Ücret', LucideIcons.coins),
+                  validator: (v) => v == null || v.isEmpty ? 'Gerekli' : null,
+                  style: const TextStyle(color: _kTextHead, fontSize: 11),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_jobFormKey.currentState!.validate()) {
+                      if (_selectedJobCity == null || _selectedJobDistrict == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Lütfen il ve ilçe seçin.'), backgroundColor: Colors.redAccent),
+                        );
+                        return;
+                      }
+
+                      provider.addJobPosting(
+                        companyId: 'admin',
+                        companyName: 'Platform Yönetimi',
+                        title: _jobTitleController.text,
+                        description: _jobDescController.text,
+                        city: _selectedJobCity!,
+                        district: _selectedJobDistrict!,
+                        salary: _jobSalaryController.text,
+                      );
+
+                      _jobTitleController.clear();
+                      _jobDescController.clear();
+                      _jobSalaryController.clear();
+                      setState(() {
+                        _selectedJobCity = null;
+                        _selectedJobDistrict = null;
+                      });
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('İş ilanı başarıyla yayınlandı! 📢'), backgroundColor: _kIndigo),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _kIndigo,
+                    minimumSize: const Size(double.infinity, 44),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('İlanı Yayınla', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                )
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: Text('TÜM AKTİF İLANLAR', style: TextStyle(color: _kTextMuted, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+        ),
+        if (provider.jobPostings.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(40),
+            decoration: BoxDecoration(color: _kWhite, borderRadius: BorderRadius.circular(24), border: Border.all(color: _kBorder)),
+            child: const Center(child: Text('Aktif iş ilanı bulunmuyor.', style: TextStyle(color: _kTextMuted))),
+          )
+        else
+          ...provider.jobPostings.map((ilan) => Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(color: _kWhite, borderRadius: BorderRadius.circular(24), border: Border.all(color: _kBorder)),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(ilan.title, style: const TextStyle(color: _kTextHead, fontSize: 13, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 4),
+                          Text('Yayınlayan: ${ilan.companyName} • ${ilan.city} / ${ilan.district} • ${ilan.salary}', style: const TextStyle(color: _kTextBody, fontSize: 11, fontWeight: FontWeight.w500)),
+                          const SizedBox(height: 6),
+                          Text(ilan.description, style: const TextStyle(color: _kTextMuted, fontSize: 11)),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(LucideIcons.trash2, color: Colors.redAccent, size: 18),
+                      onPressed: () {
+                        provider.deleteJobPosting(ilan.id);
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('İlan kaldırıldı.')));
+                      },
+                    )
+                  ],
+                ),
+              )),
+      ],
+    );
+  }
+
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: _kTextMuted, fontSize: 11),
+      prefixIcon: Icon(icon, color: _kIndigo, size: 14),
+      filled: true,
+      fillColor: _kBg,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: _kBorder)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: _kBorder)),
     );
   }
 

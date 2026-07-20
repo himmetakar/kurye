@@ -46,7 +46,15 @@ class _RestaurantPanelViewState extends State<RestaurantPanelView> {
   String _reqType = 'daimi';
   String _reqMotor = 'yes';
 
-  String _activeTab = 'orders'; // 'orders' or 'requests'
+  // Job Posting controllers and state
+  final _jobFormKey = GlobalKey<FormState>();
+  final _jobTitleController = TextEditingController();
+  final _jobDescController = TextEditingController();
+  final _jobSalaryController = TextEditingController();
+  String? _selectedJobCity;
+  String? _selectedJobDistrict;
+
+  String _activeTab = 'orders'; // 'orders', 'requests', 'postings', 'analytics'
   String _orderSubTab = 'yeni'; // 'yeni' (araniyor/kabul_edildi), 'yolda' (teslim_alindi/tasimada), 'tamamlandi' (teslim_edildi/iptal)
   bool _isPoolOrder = false;
   bool _creating = false;
@@ -59,6 +67,9 @@ class _RestaurantPanelViewState extends State<RestaurantPanelView> {
     _priceController.dispose();
     _reqDurationController.dispose();
     _reqDescController.dispose();
+    _jobTitleController.dispose();
+    _jobDescController.dispose();
+    _jobSalaryController.dispose();
     super.dispose();
   }
 
@@ -257,6 +268,8 @@ class _RestaurantPanelViewState extends State<RestaurantPanelView> {
                     )
             else if (_activeTab == 'requests')
               _buildCourierRequestsSection(provider)
+            else if (_activeTab == 'postings')
+              _buildJobPostingSection(provider)
             else
               _buildAnalyticsSection(provider),
           ],
@@ -369,6 +382,29 @@ class _RestaurantPanelViewState extends State<RestaurantPanelView> {
                     Icon(LucideIcons.clipboardList, color: _activeTab == 'requests' ? _kIndigo : _kTextBody, size: 14),
                     const SizedBox(width: 8),
                     Text('Kurye Talepleri', style: TextStyle(color: _activeTab == 'requests' ? _kIndigo : _kTextBody, fontSize: 11, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _activeTab = 'postings'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: _activeTab == 'postings' ? _kWhite : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: _activeTab == 'postings'
+                      ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))]
+                      : [],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(LucideIcons.megaphone, color: _activeTab == 'postings' ? _kIndigo : _kTextBody, size: 14),
+                    const SizedBox(width: 8),
+                    Text('İş İlanları', style: TextStyle(color: _activeTab == 'postings' ? _kIndigo : _kTextBody, fontSize: 11, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -851,7 +887,196 @@ class _RestaurantPanelViewState extends State<RestaurantPanelView> {
              ]
            )
         ]
-      )
+      ),
+    );
+  }
+
+  Widget _buildJobPostingSection(AppProvider provider) {
+    final activePostings = provider.jobPostings.where((j) => j.companyId == provider.activeRestaurant.id).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Form Card
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: _kWhite,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: _kBorder),
+          ),
+          child: Form(
+            key: _jobFormKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text('Yeni İş İlanı Yayınla', style: TextStyle(color: _kTextHead, fontSize: 13, fontWeight: FontWeight.w900)),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _jobTitleController,
+                  decoration: _inputDecoration('İlan Başlığı (Örn: Motorlu Kurye Arayışı)', LucideIcons.user),
+                  validator: (v) => v == null || v.isEmpty ? 'Gerekli' : null,
+                  style: const TextStyle(color: _kTextHead, fontSize: 11),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _jobDescController,
+                  maxLines: 3,
+                  decoration: _inputDecoration('İlan Açıklaması ve Çalışma Şartları', LucideIcons.edit),
+                  validator: (v) => v == null || v.isEmpty ? 'Gerekli' : null,
+                  style: const TextStyle(color: _kTextHead, fontSize: 11),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: _selectedJobCity,
+                        dropdownColor: _kWhite,
+                        decoration: _inputDecoration('Şehir (İl)', LucideIcons.mapPin),
+                        items: kTurkeyCities.keys.map((city) => DropdownMenuItem(
+                          value: city,
+                          child: Text(city),
+                        )).toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedJobCity = val;
+                            _selectedJobDistrict = null;
+                          });
+                        },
+                        validator: (v) => v == null ? 'Gerekli' : null,
+                        style: const TextStyle(color: _kTextHead, fontSize: 11),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: _selectedJobDistrict,
+                        dropdownColor: _kWhite,
+                        decoration: _inputDecoration('İlçe', LucideIcons.mapPin),
+                        items: (_selectedJobCity == null ? <String>[] : kTurkeyCities[_selectedJobCity]!).map((dist) => DropdownMenuItem(
+                          value: dist,
+                          child: Text(dist),
+                        )).toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedJobDistrict = val;
+                          });
+                        },
+                        validator: (v) => v == null ? 'Gerekli' : null,
+                        style: const TextStyle(color: _kTextHead, fontSize: 11),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _jobSalaryController,
+                  decoration: _inputDecoration('Hak Ediş / Ücret (Örn: Paket başı 40 TL veya Aylık 35.000 TL)', LucideIcons.coins),
+                  validator: (v) => v == null || v.isEmpty ? 'Gerekli' : null,
+                  style: const TextStyle(color: _kTextHead, fontSize: 11),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_jobFormKey.currentState!.validate()) {
+                      if (_selectedJobCity == null || _selectedJobDistrict == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Lütfen il ve ilçe seçin.'), backgroundColor: Colors.redAccent),
+                        );
+                        return;
+                      }
+
+                      provider.addJobPosting(
+                        companyId: provider.activeRestaurant.id,
+                        companyName: provider.activeRestaurant.name,
+                        title: _jobTitleController.text,
+                        description: _jobDescController.text,
+                        city: _selectedJobCity!,
+                        district: _selectedJobDistrict!,
+                        salary: _jobSalaryController.text,
+                      );
+
+                      _jobTitleController.clear();
+                      _jobDescController.clear();
+                      _jobSalaryController.clear();
+                      setState(() {
+                        _selectedJobCity = null;
+                        _selectedJobDistrict = null;
+                      });
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('İş ilanı başarıyla yayınlandı! 📢'), backgroundColor: _kIndigo),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _kIndigo,
+                    minimumSize: const Size(double.infinity, 44),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('İlanı Yayınla', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                )
+              ],
+            ),
+          ),
+        ),
+        
+        // Active Postings Header
+        const SizedBox(height: 24),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: Text('AKTİF İLANLARINIZ', style: TextStyle(color: _kTextMuted, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+        ),
+
+        // Active Postings List
+        if (activePostings.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(40),
+            decoration: BoxDecoration(color: _kWhite, borderRadius: BorderRadius.circular(24), border: Border.all(color: _kBorder)),
+            child: const Column(
+              children: [
+                Icon(LucideIcons.megaphone, size: 32, color: _kTextMuted),
+                SizedBox(height: 12),
+                Text('Yayınlanmış iş ilanınız bulunmuyor.', style: TextStyle(color: _kTextMuted, fontSize: 11)),
+              ],
+            ),
+          )
+        else
+          ...activePostings.map((ilan) => Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: _kWhite,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: _kBorder),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(ilan.title, style: const TextStyle(color: _kTextHead, fontSize: 13, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 4),
+                          Text('${ilan.city} / ${ilan.district} • ${ilan.salary}', style: const TextStyle(color: _kTextBody, fontSize: 11, fontWeight: FontWeight.w500)),
+                          const SizedBox(height: 6),
+                          Text(ilan.description, style: const TextStyle(color: _kTextMuted, fontSize: 11)),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(LucideIcons.trash2, color: Colors.redAccent, size: 18),
+                      onPressed: () {
+                        provider.deleteJobPosting(ilan.id);
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('İlan kaldırıldı.')));
+                      },
+                    )
+                  ],
+                ),
+              )),
+      ],
     );
   }
 }
