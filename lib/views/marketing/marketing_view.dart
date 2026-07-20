@@ -64,7 +64,7 @@ class _MarketingViewState extends State<MarketingView> {
   final _faqData = const [
     {
       'q': 'Sistem hangi pazaryerleri ile entegre çalışmaktadır?',
-      'a': 'KuryeApp; Yemeksepeti, Trendyol Yemek, Getir Yemek, Getir Market ve Yemeksepeti Vale pazaryeri siparişlerinizle doğrudan API entegrasyonuna sahiptir.'
+      'a': 'KuryeApp; tüm popüler yemek ve market sipariş kanalları, pazaryerleri ve kurye vale sistemlerinizle doğrudan API entegrasyonuna sahiptir.'
     },
     {
       'q': 'Kuryelerin takibini nasıl sağlıyoruz?',
@@ -763,7 +763,7 @@ class _MarketingViewState extends State<MarketingView> {
             const SizedBox(width: 24),
             Expanded(child: _quickCard(LucideIcons.mapPin, 'Canlı Harita ve Kurye Takibi', 'Kuryelerin anlık GPS koordinatlarını harita üzerinde izleyerek müşterilerinize canlı sipariş takip linki gönderebilirsiniz.')),
             const SizedBox(width: 24),
-            Expanded(child: _quickCard(LucideIcons.building2, 'Tüm Entegrasyonlar Tek Havuzda', 'Yemeksepeti, Getir ve Trendyol Yemek gibi tüm sipariş kanallarını tek API altyapısı ile şubenize bağlar.')),
+            Expanded(child: _quickCard(LucideIcons.building2, 'Tüm Entegrasyonlar Tek Havuzda', 'Tüm popüler yemek ve market sipariş kanallarını tek API altyapısı ile şubenize bağlar.')),
           ])
         else
           Column(children: [
@@ -771,7 +771,7 @@ class _MarketingViewState extends State<MarketingView> {
             const SizedBox(height: 16),
             _quickCard(LucideIcons.mapPin, 'Canlı Harita ve Kurye Takibi', 'Kuryelerin anlık GPS koordinatlarını harita üzerinde izleyerek müşterilerinize canlı sipariş takip linki gönderebilirsiniz.'),
             const SizedBox(height: 16),
-            _quickCard(LucideIcons.building2, 'Tüm Entegrasyonlar Tek Havuzda', 'Yemeksepeti, Getir ve Trendyol Yemek gibi tüm sipariş kanallarını tek API altyapısı ile şubenize bağlar.'),
+            _quickCard(LucideIcons.building2, 'Tüm Entegrasyonlar Tek Havuzda', 'Tüm popüler yemek ve market sipariş kanallarını tek API altyapısı ile şubenize bağlar.'),
           ]),
       ],
     );
@@ -839,7 +839,7 @@ class _MarketingViewState extends State<MarketingView> {
       {'icon': LucideIcons.calendar, 'title': 'İzin Yönetimi', 'desc': 'Panel veya mobil üzerinden yapılan izin ve tatil taleplerini onaylayın.'},
       {'icon': LucideIcons.dollarSign, 'title': 'Finans ve Cari Yönetimi', 'desc': 'Restoran cari hesapları, paket başı ücretler, kurye hak edişleri ve ödemeleri raporlayın.'},
       {'icon': LucideIcons.award, 'title': 'Ceza ve Ödül Yönetimi', 'desc': 'Geciken paketler ve reddedilen çağrılarda kurye ceza/ödül skorunu otomatik hesaplayın.'},
-      {'icon': LucideIcons.building2, 'title': 'Çoklu Pazaryeri Entegrasyonu', 'desc': 'Yemeksepeti, Trendyol Yemek ve Getir gibi tüm sipariş kanallarını tek API ile bağlayın.'},
+      {'icon': LucideIcons.building2, 'title': 'Çoklu Pazaryeri Entegrasyonu', 'desc': 'Tüm popüler yemek ve market sipariş kanallarını tek API ile şubenize bağlayın.'},
       {'icon': LucideIcons.mapPin, 'title': 'Canlı Kurye Harita Takibi', 'desc': 'Aktif kuryelerin konumlarını, hızlarını ve teslimat süreçlerini yönetici haritasından izleyin.'},
       {'icon': LucideIcons.barChart3, 'title': 'Detaylı Şube Raporlama', 'desc': 'Sipariş sayıları, teslimat süreleri, verimlilik oranları ve finansal durumu gösteren raporlar.'},
     ],
@@ -852,7 +852,7 @@ class _MarketingViewState extends State<MarketingView> {
       {'icon': LucideIcons.calendar, 'title': 'İzin Talebi ve Yönetimi', 'desc': 'Kuryelerin izin taleplerini mobil uygulama üzerinden şube yöneticisine iletmesi ve takip etmesi.'},
       {'icon': LucideIcons.dollarSign, 'title': 'Finans ve Cüzdan Yönetimi', 'desc': 'Paket başı kazançlar, prim hak edişleri, bahşişler ve IBAN tanımlayarak ödeme talebi oluşturma.'},
       {'icon': LucideIcons.award, 'title': 'Performans Takip Ekranı', 'desc': 'SLA ihlalleri, gecikme cezaları ve prim ödülleri ile kuryenin anlık performans puanını şeffaf izleme.'},
-      {'icon': LucideIcons.navigation, 'title': 'Rota Optimizasyonu', 'desc': 'Teslimat adresi için tek tıkla Google Haritalar, Yandex veya Apple Haritalar ile en kısa rotayı çizme.'},
+      {'icon': LucideIcons.navigation, 'title': 'Rota Optimizasyonu', 'desc': 'Teslimat adresi için tek tıkla popüler harita uygulamaları ile en kısa rotayı çizme.'},
       {'icon': LucideIcons.shieldCheck, 'title': 'AI Yüz Doğrulaması', 'desc': 'Güvenlik amacıyla kurye profil resminin kasksız ve maskesiz olmasını doğrulayan yapay zeka modülü.'},
     ],
     // --- Müşteri (index 2) ---
@@ -1209,7 +1209,7 @@ class _MarketingViewState extends State<MarketingView> {
                     ...[
                       '%100 Otomatik Kurye Atama Algoritması',
                       'Canlı Harita & Anlık Teslimat Takibi',
-                      'Yemeksepeti, Trendyol & Getir API Entegrasyonları',
+                      'Pazaryeri & Sipariş API Entegrasyonları',
                       'Kurye Mobil Uygulaması (iOS & Android)',
                       'Otomatik Hakediş & Finans Raporlaması',
                       'Detaylı SLA & Kurye Performans Analizleri',
