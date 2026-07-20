@@ -20,6 +20,8 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   bool _showLogin = false;
   String? _selectedTrackingOrderId;
+  bool _startWithRegister = false;
+  String? _initialRole;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +56,8 @@ class _AppShellState extends State<AppShell> {
       // Login View
       if (_showLogin) {
         return LoginView(
+          startWithRegister: _startWithRegister,
+          initialRole: _initialRole,
           onBack: () {
             setState(() {
               _showLogin = false;
@@ -66,6 +70,15 @@ class _AppShellState extends State<AppShell> {
         onPanelClick: () {
           setState(() {
             _showLogin = true;
+            _startWithRegister = false;
+            _initialRole = null;
+          });
+        },
+        onRegisterClick: (role) {
+          setState(() {
+            _showLogin = true;
+            _startWithRegister = true;
+            _initialRole = role;
           });
         },
         onTrackingClick: (orderId) {

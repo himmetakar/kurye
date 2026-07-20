@@ -20,14 +20,30 @@ const _kGreen = Color(0xFF10B981);       // emerald-500
 
 class LoginView extends StatefulWidget {
   final VoidCallback onBack;
+  final bool startWithRegister;
+  final String? initialRole;
 
-  const LoginView({super.key, required this.onBack});
+  const LoginView({
+    super.key,
+    required this.onBack,
+    this.startWithRegister = false,
+    this.initialRole,
+  });
 
   @override
   State<LoginView> createState() => _LoginViewState();
 }
 
 class _LoginViewState extends State<LoginView> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.startWithRegister) {
+      _isRegistering = true;
+      _regRole = widget.initialRole;
+    }
+  }
+
   final _phoneFormKey = GlobalKey<FormState>();
   final _otpFormKey = GlobalKey<FormState>();
   final _regFormKey = GlobalKey<FormState>();

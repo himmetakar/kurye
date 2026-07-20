@@ -25,8 +25,14 @@ const _kGreen = Color(0xFF10B981);       // emerald-500
 class MarketingView extends StatefulWidget {
   final VoidCallback onPanelClick;
   final ValueChanged<String>? onTrackingClick;
+  final ValueChanged<String>? onRegisterClick;
 
-  const MarketingView({super.key, required this.onPanelClick, this.onTrackingClick});
+  const MarketingView({
+    super.key,
+    required this.onPanelClick,
+    this.onTrackingClick,
+    this.onRegisterClick,
+  });
 
   @override
   State<MarketingView> createState() => _MarketingViewState();
@@ -299,13 +305,6 @@ class _MarketingViewState extends State<MarketingView> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: _buildQuickInfoSection(false),
-                ),
-
-                // Features Section (Tabbed Restoran/Kurye/Müşteri)
-                const SizedBox(height: 48),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _buildFeaturesSection(false),
                 ),
 
                 // Pricing Section
@@ -1280,17 +1279,27 @@ class _MarketingViewState extends State<MarketingView> {
         key: _formKey,
         child: Column(
           children: [
-            Row(children: [
-              Expanded(child: _formField('Adınız Soyadınız', _nameController, false)),
-              const SizedBox(width: 16),
-              Expanded(child: _formField('E-Posta Adresiniz', _emailController, false, type: TextInputType.emailAddress)),
-            ]),
-            const SizedBox(height: 14),
-            Row(children: [
-              Expanded(child: _formField('Telefon Numarası', _phoneController, false, type: TextInputType.phone)),
-              const SizedBox(width: 16),
-              Expanded(child: _formField('Restoran / Firma Adı', _companyController, false)),
-            ]),
+            if (isDesktop) ...[
+              Row(children: [
+                Expanded(child: _formField('Adınız Soyadınız', _nameController, false)),
+                const SizedBox(width: 16),
+                Expanded(child: _formField('E-Posta Adresiniz', _emailController, false, type: TextInputType.emailAddress)),
+              ]),
+              const SizedBox(height: 14),
+              Row(children: [
+                Expanded(child: _formField('Telefon Numarası', _phoneController, false, type: TextInputType.phone)),
+                const SizedBox(width: 16),
+                Expanded(child: _formField('Restoran / Firma Adı', _companyController, false)),
+              ]),
+            ] else ...[
+              _formField('Adınız Soyadınız', _nameController, false),
+              const SizedBox(height: 14),
+              _formField('E-Posta Adresiniz', _emailController, false, type: TextInputType.emailAddress),
+              const SizedBox(height: 14),
+              _formField('Telefon Numarası', _phoneController, false, type: TextInputType.phone),
+              const SizedBox(height: 14),
+              _formField('Restoran / Firma Adı', _companyController, false),
+            ],
             const SizedBox(height: 14),
             _formField('Mesajınız', _messageController, true),
             const SizedBox(height: 20),
@@ -1605,6 +1614,47 @@ class _MarketingViewState extends State<MarketingView> {
   }
 
   void _showApplyDialog(JobPosting ilan) {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    final user = provider.currentUser;
+
+    if (user != null) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: _kWhite,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Row(
+            children: const [
+              Icon(LucideIcons.circleCheckBig, color: _kGreen, size: 20),
+              SizedBox(width: 8),
+              Text('Başvuru Yapıldı', style: TextStyle(color: _kTextHead, fontWeight: FontWeight.bold, fontSize: 15)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(ilan.title, style: const TextStyle(color: _kTextHead, fontSize: 13, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text('Yayınlayan: ${ilan.companyName}', style: const TextStyle(color: _kIndigo, fontSize: 11, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              const Text(
+                'Bu ilana başarıyla başvurdunuz! 🎉 İş veren firma en kısa sürede profilinizi inceleyerek sizinle iletişime geçecektir.',
+                style: TextStyle(color: _kTextBody, fontSize: 12, height: 1.5),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Kapat', style: TextStyle(color: _kTextMuted)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1626,7 +1676,7 @@ class _MarketingViewState extends State<MarketingView> {
             Text('Yayınlayan: ${ilan.companyName}', style: const TextStyle(color: _kIndigo, fontSize: 11, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             const Text(
-              'Bu ilana başvurmak ve sistemdeki diğer ilanları incelemek için hemen Kurye App mobil uygulamasını indirip üye olabilirsiniz! 🚀',
+              'Bu ilana başvurmak ve sistemdeki diğer ilanları incelemek için kurye hesabınızın olması gerekmektedir. Hemen üye olup başvurabilirsiniz!',
               style: TextStyle(color: _kTextBody, fontSize: 12, height: 1.5),
             ),
           ],
@@ -1636,15 +1686,27 @@ class _MarketingViewState extends State<MarketingView> {
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Kapat', style: TextStyle(color: _kTextMuted)),
           ),
-          ElevatedButton(
+          TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Mobil uygulama indirme linki gönderildi! 📱'), backgroundColor: _kIndigo),
               );
             },
-            style: ElevatedButton.styleFrom(backgroundColor: _kIndigo),
-            child: const Text('Uygulamayı İndir', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text('Uygulamayı İndir', style: TextStyle(color: _kIndigo, fontWeight: FontWeight.bold)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              if (widget.onRegisterClick != null) {
+                widget.onRegisterClick!('kurye');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _kIndigo,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Kurye Olarak Üye Ol', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
